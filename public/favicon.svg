@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="alphxWhite" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="50%" stop-color="#F8FAFC" />
+      <stop offset="100%" stop-color="#E2E8F0" />
+    </linearGradient>
+    <linearGradient id="alphxSilver" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#94A3B8" />
+      <stop offset="50%" stop-color="#CBD5E1" />
+      <stop offset="100%" stop-color="#FFFFFF" />
+    </linearGradient>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+    <filter id="whiteGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Dark Background rounded square -->
+  <rect width="512" height="512" rx="120" fill="url(#bgGrad)" />
+  <rect width="506" height="506" x="3" y="3" rx="117" stroke="#334155" stroke-width="2.5" fill="none" opacity="0.6" />
+
+  <!-- Subtle grid lines for quantitative aesthetics -->
+  <line x1="128" y1="96" x2="128" y2="416" stroke="#334155" stroke-width="1.5" stroke-dasharray="4 6" opacity="0.4" />
+  <line x1="256" y1="96" x2="256" y2="416" stroke="#334155" stroke-width="1.5" stroke-dasharray="4 6" opacity="0.4" />
+  <line x1="384" y1="96" x2="384" y2="416" stroke="#334155" stroke-width="1.5" stroke-dasharray="4 6" opacity="0.4" />
+  <line x1="96" y1="256" x2="416" y2="256" stroke="#334155" stroke-width="1.5" stroke-dasharray="4 6" opacity="0.4" />
+
+  <!-- The ALPHX Glyph: Modern Greek Alpha + High-Frequency X -->
+  <g filter="url(#whiteGlow)">
+    <!-- Main Upward Apex (Alpha Pyramid) -->
+    <path d="M128 396 L256 124 L384 396 L324 396 L256 248 L188 396 Z" fill="url(#alphxWhite)" />
+
+    <!-- Sharp Intersecting Diagonal (The X-Vector Strike) -->
+    <path d="M142 164 L370 384 L336 414 L114 198 Z" fill="url(#alphxSilver)" />
+
+    <!-- Precision Core Cutout & Diamond Pulse -->
+    <polygon points="256,220 286,260 256,300 226,260" fill="#020617" />
+    <polygon points="256,236 272,260 256,284 240,260" fill="url(#alphxWhite)" />
+  </g>
+</svg>

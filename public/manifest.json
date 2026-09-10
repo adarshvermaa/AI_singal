@@ -1,0 +1,22 @@
+{
+  "name": "ALPHX Quantitative Terminal",
+  "short_name": "ALPHX",
+  "description": "Institutional AI Quantitative Crypto Trading Terminal",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A0E17",
+  "theme_color": "#0A0E17",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
