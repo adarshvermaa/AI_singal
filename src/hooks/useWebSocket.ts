@@ -99,6 +99,11 @@ export function useWebSocket() {
 
   // Resubscribe on pair or timeframe change
   useEffect(() => {
+    // Reset stale price immediately when switching assets
+    if (prevSymbolRef.current !== activeSymbol) {
+      setLatestPrice(null);
+    }
+
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
       socketRef.current.send(
         JSON.stringify({ action: 'subscribe', channel: `candles:${activeSymbol}:${activeTimeframe}` })

@@ -12,6 +12,7 @@ import { TradePanel } from '../components/execution/TradePanel';
 import { ReasoningAccordion } from '../components/signal/ReasoningAccordion';
 import { IndicatorMatrix } from '../components/signal/IndicatorMatrix';
 import { SemiAutoModal } from '../components/execution/SemiAutoModal';
+import { TelegramModal } from '../components/telegram/TelegramModal';
 import { useAutoTrade } from '../hooks/useAutoTrade';
 
 export default function Home() {
@@ -51,6 +52,9 @@ export default function Home() {
 
       {/* 5. Semi-Automatic Trade Proposal Modal */}
       <SemiAutoModal />
+
+      {/* 6. Telegram Automation Modal */}
+      <TelegramModal />
     </div>
   );
 }

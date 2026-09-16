@@ -29,6 +29,8 @@ interface TerminalState {
     tradingMode: TradingMode;
   } | null;
 
+  lastSymbolChange: number;
+
   // Actions
   setActiveSymbol: (symbol: string) => void;
   setActiveTimeframe: (timeframe: string) => void;
@@ -68,8 +70,9 @@ export const useTerminalStore = create<TerminalState>((set) => ({
   autoTradeEnabled: false,
   executionMode: 'manual',
   pendingTradeProposal: null,
+  lastSymbolChange: Date.now(),
 
-  setActiveSymbol: (symbol) => set({ activeSymbol: symbol }),
+  setActiveSymbol: (symbol) => set({ activeSymbol: symbol, analysis: null, lastSymbolChange: Date.now() }),
   setActiveTimeframe: (timeframe) => set({ activeTimeframe: timeframe }),
   setActiveTradingMode: (mode) => set({ activeTradingMode: mode }),
   setAnalysis: (analysis) => set({ analysis, analysisError: null }),

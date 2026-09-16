@@ -25,6 +25,11 @@ export interface TradeLevels {
   risk_reward_ratio: number;
   position_size_suggestion?: number;
   leverage_suggestion?: number;
+  entry_inr?: number;
+  stop_loss_inr?: number;
+  take_profit_1_inr?: number;
+  take_profit_2_inr?: number;
+  take_profit_3_inr?: number;
 }
 
 export interface ReasoningItem {
@@ -103,6 +108,8 @@ export interface AnalyzeResponse {
   exchange: string;
   timestamp: number;
   current_price: number;
+  current_price_inr?: number;
+  inr_rate?: number;
   market_regime: string;
   funding_rate?: number;
   long_short_ratio?: number;
@@ -167,3 +174,45 @@ export interface WebhookConfigResponse {
   ai_filter_enabled: boolean;
   templates: Record<string, Record<string, any>>;
 }
+
+export interface TelegramBotInfo {
+  id: number;
+  is_bot: boolean;
+  first_name: string;
+  username: string;
+  can_join_groups?: boolean;
+}
+
+export interface TelegramStatusResponse {
+  configured: boolean;
+  bot_info: TelegramBotInfo | null;
+  chat_id: string;
+  auto_send: boolean;
+  min_confidence: number;
+}
+
+export interface TelegramDetectedChat {
+  chat_id: string;
+  title: string;
+  type: string;
+  username: string | null;
+}
+
+export interface TelegramSendSignalParams {
+  symbol: string;
+  direction: string;
+  price: number;
+  confidence: number;
+  sl?: number;
+  tp1?: number;
+  tp2?: number;
+  tp3?: number;
+  timeframe?: string;
+  trading_mode?: TradingMode;
+  chat_id?: string;
+  model_agreement?: string;
+  rsi?: number;
+  supertrend?: string;
+  regime?: string;
+}
+

@@ -21,7 +21,8 @@ export const BottomDrawer: React.FC = () => {
     setIsConnectModalOpen,
   } = useExchangeStore();
 
-  const { activeTradingMode } = useTerminalStore();
+  const { activeTradingMode, analysis } = useTerminalStore();
+  const inrRate = analysis?.inr_rate || 99.95;
 
   const fetchPositions = useCallback(async () => {
     setIsRefreshing(true);
@@ -211,6 +212,9 @@ export const BottomDrawer: React.FC = () => {
                           >
                             {isProfitable ? '+' : ''}${pos.unrealized_pnl.toFixed(2)}
                           </span>
+                          <span className="block text-[10px] text-slate-400 font-normal">
+                            ({isProfitable ? '+' : ''}₹{(pos.unrealized_pnl * inrRate).toLocaleString('en-IN', { maximumFractionDigits: 0 })})
+                          </span>
                         </td>
                         <td className="py-2.5 text-right">
                           <button
@@ -262,19 +266,46 @@ export const BottomDrawer: React.FC = () => {
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs num-mono">
-                {balances.map((b) => (
-                  <div key={b.currency} className="p-3 bg-surface-elevated/60 rounded-lg border border-border">
-                    <div className="text-[10px] text-slate-400 font-sans font-semibold">
-                      {b.currency} Balance
+                {balances.map((b) => {
+                  const curr = b.currency.toUpperCase();
+                  const isINR = curr === 'INR';
+                  const isUSDT = curr === 'USDT' || curr === 'USD';
+                  const prefix = isINR ? '₹' : isUSDT ? '$' : '';
+                  const equiv = isINR
+                    ? `≈ $${(b.total / inrRate).toFixed(2)}`
+                    : isUSDT
+                    ? `≈ ₹${(b.total * inrRate).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
+                    : null;
+                  const equivAvail = isINR
+                    ? `≈ $${(b.available / inrRate).toFixed(2)}`
+                    : isUSDT
+                    ? `≈ ₹${(b.available * inrRate).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
+                    : null;
+
+                  return (
+                    <div key={b.currency} className="p-3 bg-surface-elevated/60 rounded-lg border border-border">
+                      <div className="flex items-center justify-between">
+                        <div className="text-[10px] text-slate-400 font-sans font-semibold">
+                          {b.currency} Balance
+                        </div>
+                        {equiv && (
+                          <span className="text-[10px] text-emerald-400/80 font-mono">
+                            {equiv}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-base font-bold text-white mt-1">
+                        {prefix}{b.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
+                      </div>
+                      <div className="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
+                        <span>Available: {prefix}{b.available.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
+                        {equivAvail && (
+                          <span className="text-[9px] text-slate-400 font-mono">({equivAvail})</span>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-base font-bold text-white mt-1">
-                      {b.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
-                    </div>
-                    <div className="text-[10px] text-slate-500 mt-0.5">
-                      Available: {b.available.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )
           )}

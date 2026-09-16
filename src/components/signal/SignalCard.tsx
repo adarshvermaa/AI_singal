@@ -10,13 +10,14 @@ export const SignalCard: React.FC = () => {
   if (!analysis) {
     return (
       <div className="p-4 bg-surface rounded-xl border border-border animate-pulse flex flex-col items-center justify-center text-slate-500 text-xs py-8">
-        <Cpu className="h-6 w-6 mb-2 animate-spin text-ai" />
-        <span>Evaluating AI Signal Models...</span>
+        <Cpu className="h-6 w-6 mb-2 animate-spin text-tech-blue" />
+        <span>Evaluating Quantitative Models...</span>
       </div>
     );
   }
 
   const { signal, levels } = analysis;
+  const inrRate = analysis.inr_rate || 99.95;
   const isBuy = signal.direction === 'BUY';
   const isSell = signal.direction === 'SELL';
   const isHold = signal.direction === 'HOLD';
@@ -45,7 +46,7 @@ export const SignalCard: React.FC = () => {
           </div>
           <div>
             <div className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">
-              AI ENSEMBLE VERDICT
+              QUANTITATIVE VERDICT
             </div>
             <div
               className={`text-2xl font-black tracking-tight ${
@@ -152,7 +153,10 @@ export const SignalCard: React.FC = () => {
             <div className="p-2 rounded-lg bg-tech-blue/10 border border-tech-blue/25">
               <div className="text-[10px] text-tech-blue font-semibold">ENTRY</div>
               <div className="font-bold text-white mt-0.5">
-                ${levels.entry.toLocaleString()}
+                ${levels.entry.toLocaleString(undefined, { minimumFractionDigits: levels.entry < 1 ? 4 : 2, maximumFractionDigits: levels.entry < 1 ? 4 : 2 })}
+              </div>
+              <div className="text-[10px] text-slate-400 font-mono mt-0.5">
+                (₹{(levels.entry * inrRate).toLocaleString('en-IN', { maximumFractionDigits: (levels.entry * inrRate) < 1 ? 4 : 2 })})
               </div>
             </div>
 
@@ -160,7 +164,10 @@ export const SignalCard: React.FC = () => {
             <div className="p-2 rounded-lg bg-bear/10 border border-bear/25">
               <div className="text-[10px] text-bear font-semibold">STOP LOSS</div>
               <div className="font-bold text-rose-300 mt-0.5">
-                ${levels.stop_loss.toLocaleString()}
+                ${levels.stop_loss.toLocaleString(undefined, { minimumFractionDigits: levels.stop_loss < 1 ? 4 : 2, maximumFractionDigits: levels.stop_loss < 1 ? 4 : 2 })}
+              </div>
+              <div className="text-[10px] text-rose-400/80 font-mono mt-0.5">
+                (₹{(levels.stop_loss * inrRate).toLocaleString('en-IN', { maximumFractionDigits: (levels.stop_loss * inrRate) < 1 ? 4 : 2 })})
               </div>
             </div>
 
@@ -168,7 +175,10 @@ export const SignalCard: React.FC = () => {
             <div className="p-2 rounded-lg bg-bull/10 border border-bull/25">
               <div className="text-[10px] text-bull font-semibold">TP1 (TARGET)</div>
               <div className="font-bold text-emerald-300 mt-0.5">
-                ${levels.take_profit_1.toLocaleString()}
+                ${levels.take_profit_1.toLocaleString(undefined, { minimumFractionDigits: levels.take_profit_1 < 1 ? 4 : 2, maximumFractionDigits: levels.take_profit_1 < 1 ? 4 : 2 })}
+              </div>
+              <div className="text-[10px] text-emerald-400/80 font-mono mt-0.5">
+                (₹{(levels.take_profit_1 * inrRate).toLocaleString('en-IN', { maximumFractionDigits: (levels.take_profit_1 * inrRate) < 1 ? 4 : 2 })})
               </div>
             </div>
           </div>

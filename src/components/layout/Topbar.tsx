@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import { useTerminalStore } from '../../store/terminalStore';
 import { useExchangeStore } from '../../store/exchangeStore';
 import { useWebhookStore } from '../../store/webhookStore';
+import { useTelegramStore } from '../../store/telegramStore';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import { api } from '../../services/api';
 import { AlphxLogo } from '../ui/AlphxLogo';
@@ -18,6 +19,7 @@ import {
   TrendingDown,
   Layers,
   Radio,
+  Send,
 } from 'lucide-react';
 
 export const Topbar: React.FC = () => {
@@ -47,6 +49,7 @@ export const Topbar: React.FC = () => {
   } = useExchangeStore();
 
   const { setIsWebhookModalOpen } = useWebhookStore();
+  const { setIsConfigModalOpen: setIsTelegramModalOpen, autoBroadcast: telegramAutoBroadcast } = useTelegramStore();
 
   // Load balances if connected
   useEffect(() => {
@@ -84,7 +87,14 @@ export const Topbar: React.FC = () => {
     (b) => b.currency.toUpperCase() === 'INR'
   );
 
+  const inrRate = analysis?.inr_rate || 99.95;
+  const usdtAvail = usdtBalance?.available ?? 0;
+  const inrAvail = inrBalance?.available ?? 0;
+  const totalUsd = (usdtAvail > 0 || inrAvail > 0) ? usdtAvail + (inrAvail / inrRate) : 0;
+  const totalInr = (usdtAvail * inrRate) + inrAvail;
+
   const currentPrice = latestPrice || analysis?.current_price || 0;
+  const currentPriceInr = analysis?.current_price_inr || (currentPrice * inrRate);
   const isBullish = analysis?.signal.direction === 'BUY';
   const isBearish = analysis?.signal.direction === 'SELL';
 
@@ -105,7 +115,10 @@ export const Topbar: React.FC = () => {
           {currentPrice > 0 && (
             <div className="flex items-center space-x-2 num-mono">
               <span className="text-base font-bold text-white">
-                ${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                ${currentPrice.toLocaleString(undefined, { minimumFractionDigits: currentPrice < 1 ? 4 : 2, maximumFractionDigits: currentPrice < 1 ? 4 : 2 })}
+              </span>
+              <span className="text-xs text-emerald-400 font-mono hidden xl:inline">
+                (₹{currentPriceInr.toLocaleString('en-IN', { maximumFractionDigits: currentPriceInr < 1 ? 4 : 2 })})
               </span>
               {analysis?.funding_rate !== undefined && (
                 <span
@@ -148,7 +161,10 @@ export const Topbar: React.FC = () => {
           <div className="hidden sm:flex items-center space-x-2 bg-surface-elevated px-3 py-1 rounded-lg border border-border text-xs num-mono">
             <span className="text-slate-400">Balance:</span>
             <span className="text-emerald-400 font-semibold">
-              ${(usdtBalance?.available ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ${totalUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+            <span className="text-slate-400 text-[11px]">
+              (₹{totalInr.toLocaleString('en-IN', { maximumFractionDigits: 0 })})
             </span>
             {isDemo && (
               <span className="ml-1 px-1.5 py-0.2 rounded text-[10px] font-bold bg-purple-500/25 text-purple-300 border border-purple-500/40">
@@ -179,6 +195,22 @@ export const Topbar: React.FC = () => {
         >
           <Radio className="h-3.5 w-3.5 text-tech-blue" />
           <span className="hidden sm:inline">Webhooks</span>
+        </button>
+
+        {/* Telegram Manager */}
+        <button
+          onClick={() => setIsTelegramModalOpen(true)}
+          className={`px-2.5 py-1 rounded-lg border text-xs font-medium flex items-center space-x-1.5 transition-all shadow-sm ${
+            telegramAutoBroadcast
+              ? 'bg-[#229ED9]/20 border-[#229ED9]/50 text-[#229ED9] glow-ai'
+              : 'border-border bg-surface hover:bg-surface-elevated text-slate-300 hover:text-white'
+          }`}
+          title="Telegram Signal Automation & Channel Settings"
+        >
+          <Send className="h-3.5 w-3.5 text-[#229ED9]" />
+          <span className="hidden sm:inline">
+            {telegramAutoBroadcast ? 'Telegram (Auto)' : 'Telegram'}
+          </span>
         </button>
 
         {/* Quick Demo Button if not connected */}

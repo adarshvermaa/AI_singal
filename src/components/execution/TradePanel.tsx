@@ -12,6 +12,7 @@ export const TradePanel: React.FC = () => {
 
   const [leverage, setLeverage] = useState<number>(3);
   const [autoRisk, setAutoRisk] = useState<boolean>(true);
+  const [customCurrency, setCustomCurrency] = useState<'USD' | 'INR'>('USD');
   const [customAmount, setCustomAmount] = useState<string>('100');
   const [isExecuting, setIsExecuting] = useState<boolean>(false);
   const [orderFeedback, setOrderFeedback] = useState<{
@@ -26,8 +27,16 @@ export const TradePanel: React.FC = () => {
   const sl = analysis?.levels?.stop_loss || (isBuy ? currentPrice * 0.98 : currentPrice * 1.02);
   const tp = analysis?.levels?.take_profit_1 || (isBuy ? currentPrice * 1.03 : currentPrice * 0.97);
 
-  const usdtBalance = balances.find((b) => b.currency.toUpperCase() === 'USDT')?.available || 1000;
-  const riskAmount = (usdtBalance * 0.02).toFixed(2); // 2% risk
+  // Dual Currency Balance Aggregation (USD & INR)
+  const usdtAvail = balances.find((b) => b.currency.toUpperCase() === 'USDT')?.available || 0;
+  const inrAvail = balances.find((b) => b.currency.toUpperCase() === 'INR')?.available || 0;
+  const inrRate = analysis?.inr_rate || 99.95;
+  const totalCapitalUsd = (usdtAvail > 0 || inrAvail > 0)
+    ? usdtAvail + (inrAvail / inrRate)
+    : 1000;
+  const totalCapitalInr = totalCapitalUsd * inrRate;
+  const riskAmountUsd = (totalCapitalUsd * 0.02).toFixed(2);
+  const riskAmountInr = (totalCapitalInr * 0.02).toLocaleString('en-IN', { maximumFractionDigits: 0 });
 
   const handleExecute = async () => {
     if (!isConnected) {
@@ -38,12 +47,23 @@ export const TradePanel: React.FC = () => {
     setIsExecuting(true);
     setOrderFeedback(null);
 
+    const effectivePrice = currentPrice > 0 ? currentPrice : (analysis?.current_price || 68500);
+
+    // Compute explicit quantity if user chose Custom amount
+    let explicitQuantity: number | undefined = undefined;
+    if (!autoRisk) {
+      const val = parseFloat(customAmount) || 100;
+      const usdVal = customCurrency === 'INR' ? (val / inrRate) : val;
+      explicitQuantity = (usdVal * leverage) / effectivePrice;
+    }
+
     try {
       const res = await api.executeTrade({
         symbol: activeSymbol,
         side: isBuy ? 'buy' : 'sell',
         tradingMode: activeTradingMode,
-        price: currentPrice,
+        price: effectivePrice,
+        quantity: explicitQuantity,
         leverage,
         autoSize: autoRisk,
         stopLoss: sl,
@@ -194,7 +214,7 @@ export const TradePanel: React.FC = () => {
       {/* Risk Sizing Mode */}
       <div className="p-2.5 rounded-lg bg-background/80 border border-border text-xs space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-slate-300 font-medium">Auto-Risk Position Sizer</span>
+          <span className="text-slate-300 font-medium">Position Risk Sizer</span>
           <button
             onClick={() => setAutoRisk(!autoRisk)}
             className={`px-2 py-0.5 rounded text-[10px] font-bold ${
@@ -203,23 +223,64 @@ export const TradePanel: React.FC = () => {
                 : 'bg-surface-elevated text-slate-400'
             }`}
           >
-            {autoRisk ? '2% Risk Mode (Active)' : 'Custom USD'}
+            {autoRisk ? '2% Risk Mode (Active)' : 'Custom Amount'}
           </button>
         </div>
 
         {autoRisk ? (
-          <div className="text-[11px] text-slate-400 leading-snug">
-            Max loss is capped at <span className="text-white font-bold font-mono">${riskAmount} USDT</span> (2% of portfolio) if Stop-Loss is hit.
+          <div className="space-y-1 text-[11px] text-slate-400 leading-snug">
+            <div>
+              Portfolio: <span className="text-white font-mono font-semibold">${totalCapitalUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> <span className="text-emerald-400 font-mono text-[10px]">(₹{totalCapitalInr.toLocaleString('en-IN', { maximumFractionDigits: 0 })})</span>
+            </div>
+            <div>
+              Max loss: <span className="text-white font-bold font-mono">${riskAmountUsd} USDT</span> <span className="text-emerald-400 font-mono text-[10px]">(₹{riskAmountInr})</span> <span className="text-slate-500 font-mono">[2% risk]</span>
+            </div>
           </div>
         ) : (
-          <div className="flex items-center space-x-2 pt-1">
-            <span className="text-slate-400 font-mono text-xs">$</span>
-            <input
-              type="number"
-              value={customAmount}
-              onChange={(e) => setCustomAmount(e.target.value)}
-              className="w-full bg-surface-elevated px-2 py-1 rounded border border-border text-xs text-white font-mono focus:outline-none"
-            />
+          <div className="space-y-2 pt-1">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-slate-400">Order Amount:</span>
+              <div className="flex items-center space-x-1 bg-surface-elevated p-0.5 rounded border border-border">
+                <button
+                  type="button"
+                  onClick={() => setCustomCurrency('USD')}
+                  className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                    customCurrency === 'USD' ? 'bg-tech-blue text-white' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  $ USD
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCustomCurrency('INR')}
+                  className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                    customCurrency === 'INR' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  ₹ INR
+                </button>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-slate-400 font-mono text-xs">
+                {customCurrency === 'USD' ? '$' : '₹'}
+              </span>
+              <input
+                type="number"
+                value={customAmount}
+                onChange={(e) => setCustomAmount(e.target.value)}
+                placeholder={customCurrency === 'USD' ? '100' : '10000'}
+                className="w-full bg-surface-elevated px-2 py-1 rounded border border-border text-xs text-white font-mono focus:outline-none"
+              />
+            </div>
+            <div className="text-[10px] text-slate-400 font-mono flex items-center justify-between">
+              <span>Equivalent:</span>
+              <span className="text-slate-300">
+                {customCurrency === 'USD'
+                  ? `₹${((parseFloat(customAmount) || 0) * inrRate).toLocaleString('en-IN', { maximumFractionDigits: 0 })} INR`
+                  : `$${((parseFloat(customAmount) || 0) / inrRate).toFixed(2)} USDT`}
+              </span>
+            </div>
           </div>
         )}
       </div>

@@ -1,5 +1,16 @@
 import axios from 'axios';
-import { AnalyzeResponse, MarketItem, BalanceItem, PositionItem, TradingMode, WebhookLogItem, WebhookConfigResponse } from '../types';
+import {
+  AnalyzeResponse,
+  MarketItem,
+  BalanceItem,
+  PositionItem,
+  TradingMode,
+  WebhookLogItem,
+  WebhookConfigResponse,
+  TelegramStatusResponse,
+  TelegramDetectedChat,
+  TelegramSendSignalParams,
+} from '../types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
@@ -137,6 +148,32 @@ export const api = {
 
   getWebhookLogs: async (): Promise<WebhookLogItem[]> => {
     const res = await apiClient.get('/webhook/logs');
+    return res.data;
+  },
+
+  // Telegram
+  getTelegramStatus: async (): Promise<TelegramStatusResponse> => {
+    const res = await apiClient.get('/telegram/status');
+    return res.data;
+  },
+
+  detectTelegramChat: async (): Promise<{ count: number; chats: TelegramDetectedChat[]; instruction: string }> => {
+    const res = await apiClient.get('/telegram/detect-chat');
+    return res.data;
+  },
+
+  updateTelegramConfig: async (config: { chat_id?: string; auto_send?: boolean; min_confidence?: number; bot_token?: string }) => {
+    const res = await apiClient.post('/telegram/config', config);
+    return res.data;
+  },
+
+  sendTelegramSignal: async (params: TelegramSendSignalParams): Promise<{ status: string; message_id?: number; chat: string }> => {
+    const res = await apiClient.post('/telegram/send', params);
+    return res.data;
+  },
+
+  testTelegramMessage: async (chatId?: string): Promise<{ status: string; message_id?: number; chat: string }> => {
+    const res = await apiClient.post('/telegram/test', { chat_id: chatId });
     return res.data;
   },
 };

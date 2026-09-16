@@ -14,7 +14,7 @@ export const ReasoningAccordion: React.FC = () => {
     <div className="p-4 bg-surface/95 border border-border rounded-xl space-y-3 select-none">
       <div className="flex items-center justify-between">
         <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300">
-          🧠 AI Reasoning Engine
+          🧠 Quantitative Reasoning Engine
         </h4>
         <span className="text-[10px] text-slate-500 font-mono">
           {analysis.reasoning.length} Factors Analyzed
@@ -29,7 +29,7 @@ export const ReasoningAccordion: React.FC = () => {
 
           return (
             <div
-              key={item.category}
+              key={`${item.category}-${idx}`}
               className="rounded-lg border border-border bg-background/60 overflow-hidden transition-colors"
             >
               <button
@@ -77,9 +77,9 @@ export const ReasoningAccordion: React.FC = () => {
                   </p>
                   {item.indicators?.length > 0 && (
                     <div className="flex flex-wrap gap-1 pt-1">
-                      {item.indicators.map((ind) => (
+                      {item.indicators.map((ind, i) => (
                         <span
-                          key={ind}
+                          key={`${ind}-${i}`}
                           className="px-1.5 py-0.5 rounded bg-surface-elevated border border-border/60 text-[10px] text-slate-400 font-mono"
                         >
                           {ind}

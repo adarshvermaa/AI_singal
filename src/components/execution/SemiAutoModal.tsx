@@ -15,7 +15,8 @@ import {
 } from 'lucide-react';
 
 export const SemiAutoModal: React.FC = () => {
-  const { pendingTradeProposal, setPendingTradeProposal } = useTerminalStore();
+  const { pendingTradeProposal, setPendingTradeProposal, analysis } = useTerminalStore();
+  const inrRate = analysis?.inr_rate || 99.95;
   const { isConnected, setIsConnectModalOpen } = useExchangeStore();
   const [timeLeft, setTimeLeft] = useState<number>(15);
   const [isExecuting, setIsExecuting] = useState<boolean>(false);
@@ -122,7 +123,7 @@ export const SemiAutoModal: React.FC = () => {
                   </span>
                 </div>
                 <h3 className="text-base font-bold text-white mt-0.5">
-                  High-Confidence AI Trade Opportunity
+                  High-Confidence Quantitative Trade Opportunity
                 </h3>
               </div>
             </div>
@@ -154,7 +155,7 @@ export const SemiAutoModal: React.FC = () => {
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-slate-400">AI Confidence</span>
+              <span className="text-slate-400">Model Confidence</span>
               <span className="font-bold text-emerald-400">
                 {(confidence * 100).toFixed(1)}%
               </span>
@@ -162,17 +163,30 @@ export const SemiAutoModal: React.FC = () => {
             <div className="flex justify-between items-center">
               <span className="text-slate-400">Entry Reference</span>
               <span className="font-bold text-white">
-                ${price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                ${price.toLocaleString(undefined, { minimumFractionDigits: price < 1 ? 4 : 2 })}
+                <span className="text-slate-400 text-[11px] ml-1.5 font-normal">
+                  (₹{(price * inrRate).toLocaleString('en-IN', { maximumFractionDigits: (price * inrRate) < 1 ? 4 : 2 })})
+                </span>
               </span>
             </div>
             <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border/60">
               <div>
                 <span className="text-[10px] text-slate-400 block">Stop Loss</span>
-                <span className="font-bold text-rose-400">${sl.toFixed(2)}</span>
+                <span className="font-bold text-rose-400">
+                  ${sl.toLocaleString(undefined, { minimumFractionDigits: sl < 1 ? 4 : 2 })}
+                  <span className="text-rose-400/80 text-[10px] ml-1 block">
+                    (₹{(sl * inrRate).toLocaleString('en-IN', { maximumFractionDigits: (sl * inrRate) < 1 ? 4 : 2 })})
+                  </span>
+                </span>
               </div>
               <div className="text-right">
                 <span className="text-[10px] text-slate-400 block">Take Profit</span>
-                <span className="font-bold text-emerald-400">${tp.toFixed(2)}</span>
+                <span className="font-bold text-emerald-400">
+                  ${tp.toLocaleString(undefined, { minimumFractionDigits: tp < 1 ? 4 : 2 })}
+                  <span className="text-emerald-400/80 text-[10px] ml-1 block">
+                    (₹{(tp * inrRate).toLocaleString('en-IN', { maximumFractionDigits: (tp * inrRate) < 1 ? 4 : 2 })})
+                  </span>
+                </span>
               </div>
             </div>
           </div>
